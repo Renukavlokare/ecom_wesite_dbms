@@ -2,36 +2,26 @@ import { Heart, Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/hooks/useCart";
+import { Product } from "@/hooks/useProducts";
 
 interface ProductCardProps {
-  id: number;
-  title: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  image: string;
-  discount?: number;
-  isNew?: boolean;
+  product: Product;
 }
 
-const ProductCard = ({ 
-  title, 
-  price, 
-  originalPrice, 
-  rating, 
-  reviews, 
-  image, 
-  discount,
-  isNew 
-}: ProductCardProps) => {
+const ProductCard = ({ product }: ProductCardProps) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(product.id);
+  };
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
       <CardContent className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <img 
-            src={image} 
-            alt={title}
+            src={product.image_url || "/placeholder.svg"} 
+            alt={product.title}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <Button
@@ -41,12 +31,12 @@ const ProductCard = ({
           >
             <Heart className="h-4 w-4" />
           </Button>
-          {discount && (
+          {product.discount_percentage && (
             <Badge className="absolute top-2 left-2 bg-ecom-orange text-white">
-              -{discount}%
+              -{product.discount_percentage}%
             </Badge>
           )}
-          {isNew && (
+          {product.is_new && (
             <Badge className="absolute top-2 left-2 bg-ecom-success text-white">
               New
             </Badge>
@@ -55,7 +45,7 @@ const ProductCard = ({
 
         <div className="p-4">
           <h3 className="font-medium text-sm text-ecom-gray-800 line-clamp-2 mb-2 group-hover:text-ecom-blue transition-colors">
-            {title}
+            {product.title}
           </h3>
 
           <div className="flex items-center gap-1 mb-2">
@@ -64,30 +54,34 @@ const ProductCard = ({
                 <Star
                   key={i}
                   className={`h-3 w-3 ${
-                    i < Math.floor(rating) 
+                    i < Math.floor(product.rating) 
                       ? "fill-yellow-400 text-yellow-400" 
                       : "text-gray-300"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground">({reviews})</span>
+            <span className="text-xs text-muted-foreground">({product.reviews_count})</span>
           </div>
 
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg font-bold text-ecom-gray-900">
-              ₹{(price * 83).toFixed(0)}
+              ₹{product.price.toFixed(0)}
             </span>
-            {originalPrice && (
+            {product.original_price && (
               <span className="text-sm text-muted-foreground line-through">
-                ₹{(originalPrice * 83).toFixed(0)}
+                ₹{product.original_price.toFixed(0)}
               </span>
             )}
           </div>
 
-          <Button className="w-full bg-ecom-orange hover:bg-ecom-orange/90 text-white">
+          <Button 
+            className="w-full bg-ecom-orange hover:bg-ecom-orange/90 text-white"
+            onClick={handleAddToCart}
+            disabled={product.stock_quantity === 0}
+          >
             <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
+            {product.stock_quantity === 0 ? "Out of Stock" : "Add to Cart"}
           </Button>
         </div>
       </CardContent>

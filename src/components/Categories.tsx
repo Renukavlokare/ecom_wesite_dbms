@@ -1,16 +1,51 @@
-import { Smartphone, Laptop, Home, Car, Gamepad2, Book, Shirt, Heart } from "lucide-react";
+import { 
+  Smartphone, 
+  Shirt, 
+  Home, 
+  Dumbbell, 
+  Book, 
+  Heart 
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color_class: string;
+}
 
 const Categories = () => {
-  const categories = [
-    { id: 1, name: "Electronics", icon: Smartphone, color: "bg-blue-100 text-blue-600" },
-    { id: 2, name: "Computers", icon: Laptop, color: "bg-purple-100 text-purple-600" },
-    { id: 3, name: "Home & Garden", icon: Home, color: "bg-green-100 text-green-600" },
-    { id: 4, name: "Automotive", icon: Car, color: "bg-red-100 text-red-600" },
-    { id: 5, name: "Gaming", icon: Gamepad2, color: "bg-yellow-100 text-yellow-600" },
-    { id: 6, name: "Books", icon: Book, color: "bg-indigo-100 text-indigo-600" },
-    { id: 7, name: "Fashion", icon: Shirt, color: "bg-pink-100 text-pink-600" },
-    { id: 8, name: "Health & Beauty", icon: Heart, color: "bg-orange-100 text-orange-600" }
-  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+      
+      if (data) {
+        setCategories(data);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case "Smartphone": return Smartphone;
+      case "Shirt": return Shirt;
+      case "Home": return Home;
+      case "Dumbbell": return Dumbbell;
+      case "Book": return Book;
+      case "Heart": return Heart;
+      default: return Smartphone;
+    }
+  };
 
   return (
     <section className="py-12 bg-ecom-gray-50">
@@ -22,20 +57,23 @@ const Categories = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((category) => {
-            const IconComponent = category.icon;
+            const IconComponent = getIcon(category.icon);
             return (
               <div
                 key={category.id}
                 className="group cursor-pointer bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 text-center"
               >
-                <div className={`w-16 h-16 ${category.color} rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
-                  <IconComponent className="h-8 w-8" />
+                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-gray-100 transition-colors group-hover:scale-110">
+                  <IconComponent className={`h-8 w-8 ${category.color_class}`} />
                 </div>
                 <h3 className="font-medium text-sm text-ecom-gray-800 group-hover:text-ecom-blue transition-colors">
                   {category.name}
                 </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {category.description}
+                </p>
               </div>
             );
           })}
